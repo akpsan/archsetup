@@ -22,7 +22,8 @@ done
 zsh_path=$(command -v zsh)
 if [[ $(getent passwd "$USER" | cut -d: -f7) != "$zsh_path" ]]; then
   sudo chsh -s "$zsh_path" "$USER"
-  ok "login shell set to zsh (takes effect on next login)"
+  ok "login shell set to zsh"
+  needs_reboot "login shell changed to zsh"
 fi
 
 ok "Shell ready (~/.zshrc and starship.toml come from the dotfiles module)"

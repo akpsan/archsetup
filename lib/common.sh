@@ -58,6 +58,17 @@ aur() {
   paru -S --needed --noconfirm "$@"
 }
 
+# needs_reboot REASON
+# Notes that a change only takes effect after a reboot. install.sh collects
+# these and offers to reboot at the end; a module run on its own just says so.
+needs_reboot() {
+  if [[ -n ${REBOOT_FILE:-} ]]; then
+    grep -qxF "$1" "$REBOOT_FILE" 2>/dev/null || echo "$1" >> "$REBOOT_FILE"
+  else
+    warn "Reboot needed: $1"
+  fi
+}
+
 is_installed() { pacman -Qq "$1" &>/dev/null; }
 
 # Enable and start systemd units (no-op if already enabled and running).
