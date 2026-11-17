@@ -1,0 +1,62 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 34,
+  "margin-top": 6,
+  "margin-left": 10,
+  "margin-right": 10,
+  "spacing": 6,
+
+  "modules-left": ["hyprland/workspaces", "hyprland/window"],
+  "modules-center": ["clock"],
+  "modules-right": ["tray", "pulseaudio", "custom/netspeed", "cpu", "memory", "custom/power"],
+
+  "hyprland/workspaces": {
+    "persistent-workspaces": { "*": 5 },
+    "on-scroll-up": "hyprctl dispatch 'hl.dsp.focus({workspace=[[e+1]]})'",
+    "on-scroll-down": "hyprctl dispatch 'hl.dsp.focus({workspace=[[e-1]]})'"
+  },
+
+  "hyprland/window": {
+    "format": "{}",
+    "max-length": 50,
+    "separate-outputs": true
+  },
+
+  "clock": {
+    "format": "󰥔  {:%H:%M}",
+    "format-alt": "󰃭  {:%a %d %b %Y}",
+    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "calendar": {
+      "mode": "month",
+      "format": {
+        "today": "<span color='#f38ba8'><b>{}</b></span>"
+      }
+    }
+  },
+
+  "tray": { "icon-size": 16, "spacing": 8 },
+
+  "pulseaudio": {
+    "format": "{icon}  {volume}%",
+    "format-muted": "󰖁  muted",
+    "format-icons": { "headphone": "󰋋", "default": ["󰕿", "󰖀", "󰕾"] },
+    "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+    "scroll-step": 5
+  },
+
+  "custom/netspeed": {
+    "exec": "~/.config/waybar/scripts/netspeed.sh",
+    "return-type": "json",
+    "restart-interval": 5
+  },
+
+  "cpu": { "format": "󰘚  {usage}%", "interval": 3 },
+  "memory": { "format": "󰍛  {percentage}%", "interval": 5 },
+
+  "custom/power": {
+    "format": "⏻",
+    "tooltip": false,
+    "on-click": "hyprctl dispatch 'hl.dsp.exit()'"
+  }
+}
