@@ -135,6 +135,10 @@ end
 hl.bind(mainMod .. " + S",         hl.dsp.workspace.toggle_special("magic"))
 hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:magic" }))
 
+-- Screenshots (saved to ~/Pictures/Screenshots and copied to clipboard)
+hl.bind(mainMod .. " + SHIFT + A", hl.dsp.exec_cmd("~/.local/bin/screenshot area")) -- drag a region or click a window
+hl.bind(mainMod .. " + SHIFT + F", hl.dsp.exec_cmd("~/.local/bin/screenshot full")) -- all screens
+
 hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
 hl.bind(mainMod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }))
 
