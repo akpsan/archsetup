@@ -7,7 +7,7 @@ is_installed hyprland || needs_reboot "Hyprland desktop installed"
 pkgs hyprland hyprlauncher hyprpaper hyprpolkitagent hyprlock hypridle \
      xdg-desktop-portal-hyprland xdg-desktop-portal-gtk xdg-utils \
      qt5-wayland qt6-wayland waybar mako wofi \
-     wl-clipboard cliphist grim slurp
+     wl-clipboard cliphist grim slurp python  # python: window picking in ~/.local/bin/screenshot
 
 log "Audio"
 pkgs pipewire pipewire-pulse wireplumber pavucontrol playerctl

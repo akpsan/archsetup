@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Mac-style screenshots for Hyprland.
+#   screenshot area   drag a region, or click a window to capture just that window
+#   screenshot full   all monitors
+# Every capture is saved to ~/Pictures/Screenshots AND copied to the clipboard.
+set -euo pipefail
+
+dir="$HOME/Pictures/Screenshots"
+mkdir -p "$dir"
+file="$dir/Screenshot $(date '+%Y-%m-%d at %H.%M.%S').png"
+
+notify() { hyprctl notify 1 3000 0 "$1" >/dev/null 2>&1 || true; }
+
+case "${1:-area}" in
+  area)
+    # Offer the visible windows as click targets; dragging still selects a free region.
+    windows=$(hyprctl monitors -j | python3 -c '
+import json, subprocess, sys
+active = {m["activeWorkspace"]["id"] for m in json.load(sys.stdin)}
+for c in json.loads(subprocess.check_output(["hyprctl", "clients", "-j"])):
+    if c["workspace"]["id"] in active and c["mapped"] and not c["hidden"]:
+        (x, y), (w, h) = c["at"], c["size"]
+        print(f"{x},{y} {w}x{h}")
+')
+    # Esc in slurp cancels: exit quietly.
+    geom=$(printf '%s\n' "$windows" | slurp -d) || exit 0
+    grim -g "$geom" "$file"
+    ;;
+  full)
+    grim "$file"
+    ;;
+  *)
+    echo "usage: screenshot [area|full]" >&2
+    exit 2
+    ;;
+esac
+
+wl-copy --type image/png <"$file"
+notify "Screenshot saved and copied: ${file##*/}"
