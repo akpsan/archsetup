@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Toggle a screen recording on Hyprland.
+#   screenrecord        drag a region, or click a window, to start recording it
+#   screenrecord full   record the monitor under the cursor
+# Run it again (same keybind) to stop. Clips go to ~/Videos/Recordings.
+set -euo pipefail
+
+notify() { hyprctl notify 1 3000 0 "$1" >/dev/null 2>&1 || true; }
+
+# Already recording: stop it. SIGINT lets wf-recorder finish writing the file.
+if pkill -INT -x wf-recorder; then
+  notify "Recording stopped"
+  exit 0
+fi
+
+dir="$HOME/Videos/Recordings"
+mkdir -p "$dir"
+file="$dir/Recording $(date '+%Y-%m-%d at %H.%M.%S').mp4"
+
+case "${1:-area}" in
+  area)
+    # Offer the visible windows as click targets; dragging still selects a free region.
+    windows=$(hyprctl monitors -j | python3 -c '
+import json, subprocess, sys
+active = {m["activeWorkspace"]["id"] for m in json.load(sys.stdin)}
+for c in json.loads(subprocess.check_output(["hyprctl", "clients", "-j"])):
+    if c["workspace"]["id"] in active and c["mapped"] and not c["hidden"]:
+        (x, y), (w, h) = c["at"], c["size"]
+        print(f"{x},{y} {w}x{h}")
+')
+    # Esc in slurp cancels: exit quietly.
+    geom=$(printf '%s\n' "$windows" | slurp -d) || exit 0
+    args=(-g "$geom")
+    ;;
+  full)
+    monitor=$(hyprctl monitors -j | python3 -c '
+import json, sys
+print(next(m["name"] for m in json.load(sys.stdin) if m["focused"]))')
+    args=(-o "$monitor")
+    ;;
+  *)
+    echo "usage: screenrecord [area|full]" >&2
+    exit 2
+    ;;
+esac
+
+notify "Recording… press the shortcut again to stop"
+wf-recorder "${args[@]}" -f "$file" >/dev/null 2>&1 || true
+notify "Recording saved: ${file##*/}"

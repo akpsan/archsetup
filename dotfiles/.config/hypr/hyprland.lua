@@ -139,6 +139,10 @@ hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:mag
 hl.bind(mainMod .. " + SHIFT + A", hl.dsp.exec_cmd("~/.local/bin/screenshot area")) -- drag a region or click a window
 hl.bind(mainMod .. " + SHIFT + F", hl.dsp.exec_cmd("~/.local/bin/screenshot full")) -- all screens
 
+-- Screen recording (saved to ~/Videos/Recordings); press the same keys again to stop
+hl.bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("~/.local/bin/screenrecord area")) -- drag a region or click a window
+hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("~/.local/bin/screenrecord full")) -- current monitor
+
 hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
 hl.bind(mainMod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }))
 
