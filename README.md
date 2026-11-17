@@ -12,7 +12,8 @@ Turns a fresh Arch install into a Hyprland desktop. Every module is safe to reru
    cd ~/work/archsetup
    ./install.sh
    ```
-3. Reboot. Logging in on tty1 starts Hyprland.
+3. Reboot when it asks (it lists why, and only asks when something needs it).
+   Logging in on tty1 starts Hyprland.
 4. Open Timeshift once: RSYNC mode, root disk, set a schedule.
 
 ## Usage
@@ -30,7 +31,7 @@ bash modules/80-dotfiles.sh  # any module also runs on its own
 |---|---|
 | `install.sh` | Runs modules in numeric order; asks for sudo once |
 | `modules/NN-name.sh` | One concern each; `# desc:` line shows in `--list` |
-| `lib/common.sh` | Helpers: `pkgs`, `aur`, `enable_now`, `write_root`, `set_conf` |
+| `lib/common.sh` | Helpers: `pkgs`, `aur`, `enable_now`, `write_root`, `set_conf`, `needs_reboot` |
 | `settings.conf` | Shared, non-personal defaults (zram size) |
 | `settings.local.conf` | Your answers to first-run questions: git identity, mirror countries (gitignored) |
 | `dotfiles/` | Mirrors `$HOME`; symlinked in by the `dotfiles` module |
@@ -63,6 +64,9 @@ source "$(dirname "$0")/../lib/common.sh"
 pkgs some-package
 enable_now some.service
 ```
+
+If a change only applies after a reboot, call `needs_reboot "reason"` when it
+actually happens (not on every run).
 
 Keep it rerunnable: use `pkgs` (skips installed), `write_root` (only writes on change),
 and check state before one-off actions.

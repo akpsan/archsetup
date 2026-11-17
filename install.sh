@@ -46,7 +46,12 @@ fi
 # Ask for the sudo password once and keep it fresh while modules run.
 sudo -v
 while sleep 50; do sudo -n true; kill -0 $$ 2>/dev/null || exit; done 2>/dev/null &
-trap 'kill $! 2>/dev/null' EXIT
+keepalive=$!
+
+# Modules append reasons here via needs_reboot (lib/common.sh).
+export REBOOT_FILE
+REBOOT_FILE=$(mktemp)
+trap 'kill $keepalive 2>/dev/null; rm -f "$REBOOT_FILE"' EXIT
 
 failed=()
 for m in "${selected[@]}"; do
@@ -54,9 +59,24 @@ for m in "${selected[@]}"; do
   bash "$m" || failed+=("$(name_of "$m")")
 done
 
+# A kernel upgrade (from any module) leaves the running kernel's modules gone.
+[[ -d /usr/lib/modules/$(uname -r) ]] || echo "kernel updated" >> "$REBOOT_FILE"
+
 echo
+if [[ -s $REBOOT_FILE ]]; then
+  printf '\e[1;33mReboot needed to finish:\e[0m\n'
+  sed 's/^/  - /' "$REBOOT_FILE"
+  echo
+fi
+
 if (( ${#failed[@]} )); then
   echo "Failed modules: ${failed[*]}  (fix and rerun: ./install.sh ${failed[*]})" >&2
   exit 1
 fi
 echo "All done."
+
+if [[ -s $REBOOT_FILE && -t 0 ]]; then
+  read -rp "Reboot now? [y/N] " answer || answer=""
+  [[ $answer == [yY]* ]] && systemctl reboot
+fi
+exit 0

@@ -8,23 +8,28 @@ case $(grep -m1 vendor_id /proc/cpuinfo | awk '{print $3}') in
   GenuineIntel) ucode=intel-ucode ;;
   *) ucode="" ; warn "Unknown CPU vendor; skipping microcode" ;;
 esac
-if [[ -n $ucode ]] && ! is_installed "$ucode"; then
-  pkgs "$ucode"
-  if [[ -f /boot/grub/grub.cfg ]]; then
-    log "Regenerating GRUB config to load microcode"
-    sudo grub-mkconfig -o /boot/grub/grub.cfg
+if [[ -n $ucode ]]; then
+  if is_installed "$ucode"; then
+    ok "$ucode installed"
   else
-    warn "Add /$ucode.img to your bootloader entry manually"
+    pkgs "$ucode"
+    fresh_ucode=1
+    needs_reboot "CPU microcode installed"
   fi
-elif [[ -n $ucode ]]; then
-  ok "$ucode installed"
+
+  # Only GRUB is wired up automatically; anything else is left alone.
+  if sudo test -f /boot/grub/grub.cfg; then
+    if [[ -n ${fresh_ucode:-} ]]; then
+      log "Regenerating GRUB config to load microcode"
+      sudo grub-mkconfig -o /boot/grub/grub.cfg
+    fi
+  else
+    warn "Bootloader isn't GRUB: skipped microcode boot setup. Add /$ucode.img to your boot entry yourself"
+  fi
 fi
 
 log "GPU drivers"
 gpus=$(lspci -nn | grep -iE 'vga|3d|display' || true)
 grep -qi 'amd\|ati'  <<<"$gpus" && pkgs mesa vulkan-radeon libva-mesa-driver
 grep -qi 'intel'     <<<"$gpus" && pkgs mesa vulkan-intel intel-media-driver
-if grep -qi 'nvidia' <<<"$gpus"; then
-  warn "NVIDIA GPU found: install drivers by hand (nvidia-open or nvidia), see the Arch wiki"
-fi
 ok "${gpus:-no GPU detected}"
