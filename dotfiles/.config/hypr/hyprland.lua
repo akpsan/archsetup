@@ -11,6 +11,7 @@ local menu = "hyprlauncher"
 
 hl.on("hyprland.start", function ()
     hl.exec_cmd("waybar")
+    hl.exec_cmd("hypridle")
 end)
 
 hl.env("XCURSOR_SIZE", "24")
@@ -118,6 +119,7 @@ hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))
+hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("loginctl lock-session"))
 
 hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }))
 hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))
