@@ -95,6 +95,14 @@ hl.config({
     },
 })
 
+-- Software cursor: the hardware-cursor path on amdgpu (RX 6600) caused cursor
+-- stalls and a compositor abort after a GPU ring reset. 1 = always off.
+hl.config({
+    cursor = {
+        no_hardware_cursors = 1,
+    },
+})
+
 hl.config({
     layers = {
         allow_new_top_layers_over_existing_fullscreen = true,
