@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# desc: pacman tweaks, fast mirrors (reflector), cache cleanup, full system update
+# desc: pacman tweaks, fast mirrors (reflector), cache cleanup, keep running kernel's modules, full system update
 source "$(dirname "$0")/../lib/common.sh"
 require MIRROR_COUNTRIES
 
@@ -21,6 +21,14 @@ then
   sudo systemctl start reflector.service || warn "reflector failed; keeping current mirrorlist"
 fi
 enable_now reflector.timer paccache.timer
+
+# A kernel upgrade deletes the running kernel's modules, so anything that loads
+# a module before the next reboot fails (docker needs the nat netfilter modules).
+# kernel-modules-hook keeps them until reboot; its cleanup service drops the
+# old copies at boot. Installed before the update so it covers this one too.
+log "Keep running kernel's modules across upgrades"
+pkgs kernel-modules-hook
+sudo systemctl enable linux-modules-cleanup.service
 
 log "System update"
 sudo pacman -Syu --noconfirm
