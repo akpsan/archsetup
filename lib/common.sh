@@ -72,7 +72,18 @@ needs_reboot() {
 is_installed() { pacman -Qq "$1" &>/dev/null; }
 
 # Enable and start systemd units (no-op if already enabled and running).
-enable_now() { sudo systemctl enable --now "$@"; }
+# If the running kernel's modules are gone (the kernel was upgraded and the
+# machine not yet rebooted), services that load modules on start can fail, so
+# they are only enabled here and start on the next boot.
+enable_now() {
+  if [[ -d /usr/lib/modules/$(uname -r) ]]; then
+    sudo systemctl enable --now "$@"
+  else
+    sudo systemctl enable "$@"
+    warn "kernel $(uname -r) was upgraded; not starting $* until reboot"
+    needs_reboot "start $* on the upgraded kernel"
+  fi
+}
 
 # write_root DEST < content
 # Writes a root-owned file only if its content differs.
