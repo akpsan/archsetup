@@ -37,6 +37,12 @@ fi
 
 [[ $EUID -ne 0 ]] || { echo "Run as your normal user, not root." >&2; exit 1; }
 
+# Keep a copy of everything printed, for debugging a failed run.
+LOG_DIR=${XDG_STATE_HOME:-$HOME/.local/state}/archsetup
+mkdir -p "$LOG_DIR"
+LOG_FILE="$LOG_DIR/$(date +%F_%H%M).log"
+exec > >(tee -a "$LOG_FILE") 2>&1
+
 # Ask every question the selected modules need now, so the run is unattended.
 mapfile -t needed < <(sed -n 's/^require //p' "${selected[@]}" | tr ' ' '\n' | awk 'NF && !seen[$0]++')
 if (( ${#needed[@]} )); then
@@ -71,9 +77,10 @@ fi
 
 if (( ${#failed[@]} )); then
   echo "Failed modules: ${failed[*]}  (fix and rerun: ./install.sh ${failed[*]})" >&2
+  echo "Log: $LOG_FILE" >&2
   exit 1
 fi
-echo "All done."
+echo "All done. Log: $LOG_FILE"
 
 if [[ -s $REBOOT_FILE && -t 0 ]]; then
   read -rp "Reboot now? [y/N] " answer || answer=""
