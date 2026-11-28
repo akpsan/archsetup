@@ -17,5 +17,19 @@ then
   sudo systemctl restart systemd-zram-setup@zram0.service
 fi
 
+log "Console font (readable on high-resolution screens)"
+pkgs terminus-font
+sudo touch /etc/vconsole.conf
+if ! sudo grep -qxF 'FONT=ter-132b' /etc/vconsole.conf; then
+  if sudo grep -q '^FONT=' /etc/vconsole.conf; then
+    sudo sed -i 's/^FONT=.*/FONT=ter-132b/' /etc/vconsole.conf
+  else
+    echo 'FONT=ter-132b' | sudo tee -a /etc/vconsole.conf >/dev/null
+  fi
+  ok "/etc/vconsole.conf: FONT=ter-132b"
+else
+  ok "/etc/vconsole.conf unchanged"
+fi
+
 log "Services"
 enable_now NetworkManager systemd-timesyncd fstrim.timer
